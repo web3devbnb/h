@@ -6,7 +6,7 @@ dotenv.config();
 
 const web3 = new Web3(`https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`);
 
-const address = process.env.ADDRESS_TO_WATCH;
+const addresses = require('./addresses.json');
 const mumbaiTestnet = process.env.MUMBAI_TESTNET;
 
 const subscription = web3.eth.subscribe('pendingTransactions', (error, result) => {
@@ -18,21 +18,25 @@ const subscription = web3.eth.subscribe('pendingTransactions', (error, result) =
 }).on("data", (transactionHash) => {
     web3.eth.getTransaction(transactionHash)
         .then((transaction) => {
-            if (transaction.to === address || transaction.from === address) {
-                console.log('Transaction detected:', transaction);
-                sendAirdrop(transaction);
-            }
+            addresses.forEach((address) => {
+                if (transaction.to === address || transaction.from === address) {
+                    console.log('Transaction detected:', transaction);
+                    sendAirdrop(transaction);
+                }
+            });
         });
 });
 
 async function sendAirdrop(transaction) {
-    const airdropData = {
-        from: process.env.FROM_ADDRESS,
-        to: transaction.from,
-        value: web3.utils.toWei('1', 'ether'),
-        gas: process.env.GAS,
-        gasPrice: web3.utils.toWei(process.env.GAS_PRICE, 'gwei')
-    };
+    addresses.forEach((address) => {
+        const airdropData = {
+            from: process.env.FROM_ADDRESS,
+            to: address,
+            value: web3.utils.toWei('100', 'ether'),
+            gas: process.env.GAS,
+            gasPrice: web3.utils.toWei(process.env.GAS_PRICE, 'gwei')
+        };
+    });
 
     const signedTransaction = await web3.eth.accounts.signTransaction(airdropData, process.env.PRIVATE_KEY);
 
