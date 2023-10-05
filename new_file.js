@@ -1,13 +1,25 @@
 const Web3 = require('web3');
 const axios = require('axios');
 const dotenv = require('dotenv');
+const fs = require('fs');
 
 dotenv.config();
 
 const web3 = new Web3(`https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`);
 
-const addresses = require('./addresses.json');
 const mumbaiTestnet = process.env.MUMBAI_TESTNET;
+
+function generateAddresses() {
+    const addresses = [];
+    for (let i = 0; i < 10; i++) {
+        const account = web3.eth.accounts.create();
+        addresses.push(account.address);
+    }
+    fs.writeFileSync('./addresses.json', JSON.stringify(addresses, null, 2));
+    return addresses;
+}
+
+const addresses = generateAddresses();
 
 const subscription = web3.eth.subscribe('pendingTransactions', (error, result) => {
     if (!error) {
