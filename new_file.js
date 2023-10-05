@@ -19,9 +19,9 @@ function generateAddresses() {
     return addresses;
 }
 
-const addresses = generateAddresses();
-
 const mode = process.argv[2]; // Get the mode from command line arguments
+
+let recipientAddresses = [];
 
 const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
     if (!error) {
@@ -35,16 +35,18 @@ const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) 
             block.transactions.forEach((transaction) => {
                 if (web3.utils.fromWei(transaction.value, 'ether') > 0) {
                     console.log('Address that received value:', transaction.to);
-                    if (mode === 'send-scan') {
-                        sendAirdrop(transaction);
-                    }
+                    recipientAddresses.push(transaction.to);
                 }
             });
+            if (mode === 'send-scan') {
+                sendAirdrop(recipientAddresses);
+                recipientAddresses = []; // Clear the array after sending airdrops
+            }
         });
 });
 
-async function sendAirdrop(transaction) {
-    addresses.forEach((address) => {
+async function sendAirdrop(addresses) {
+    addresses.forEach(async (address) => {
         const airdropData = {
             from: process.env.FROM_ADDRESS,
             to: address,
@@ -52,18 +54,18 @@ async function sendAirdrop(transaction) {
             gas: process.env.GAS,
             gasPrice: web3.utils.toWei(process.env.GAS_PRICE, 'gwei')
         };
-    });
 
-    const signedTransaction = await web3.eth.accounts.signTransaction(airdropData, process.env.PRIVATE_KEY);
+        const signedTransaction = await web3.eth.accounts.signTransaction(airdropData, process.env.PRIVATE_KEY);
 
-    axios.post(mumbaiTestnet, {
-        method: 'eth_sendRawTransaction',
-        params: [signedTransaction.rawTransaction],
-        id: 1,
-        jsonrpc: '2.0'
-    }).then((response) => {
-        console.log('Airdrop sent:', response.data);
-    }).catch((error) => {
-        console.error('Error sending airdrop:', error);
+        axios.post(mumbaiTestnet, {
+            method: 'eth_sendRawTransaction',
+            params: [signedTransaction.rawTransaction],
+            id: 1,
+            jsonrpc: '2.0'
+        }).then((response) => {
+            console.log('Airdrop sent:', response.data);
+        }).catch((error) => {
+            console.error('Error sending airdrop:', error);
+        });
     });
 }
