@@ -1,9 +1,13 @@
 const Web3 = require('web3');
 const axios = require('axios');
-const web3 = new Web3('https://mainnet.infura.io/v3/YourInfuraProjectID'); // Replace with your Infura project ID
+const dotenv = require('dotenv');
 
-const address = '0xYourAddress'; // Replace with the address you want to watch
-const mumbaiTestnet = 'https://matic-mumbai.chainstacklabs.com';
+dotenv.config();
+
+const web3 = new Web3(`https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`);
+
+const address = process.env.ADDRESS_TO_WATCH;
+const mumbaiTestnet = process.env.MUMBAI_TESTNET;
 
 const subscription = web3.eth.subscribe('pendingTransactions', (error, result) => {
     if (!error) {
@@ -22,16 +26,15 @@ const subscription = web3.eth.subscribe('pendingTransactions', (error, result) =
 });
 
 async function sendAirdrop(transaction) {
-    // Replace with your airdrop logic
     const airdropData = {
-        from: '0xYourAddress', // Replace with your address
-        to: transaction.from, // Send airdrop to the sender of the transaction
-        value: web3.utils.toWei('1', 'ether'), // Replace with the amount you want to send
-        gas: 'YourGas', // Replace with the gas for the Ethereum network
-        gasPrice: web3.utils.toWei('YourGasPrice', 'gwei') // Replace with the gas price for the Ethereum network
+        from: process.env.FROM_ADDRESS,
+        to: transaction.from,
+        value: web3.utils.toWei('1', 'ether'),
+        gas: process.env.GAS,
+        gasPrice: web3.utils.toWei(process.env.GAS_PRICE, 'gwei')
     };
 
-    const signedTransaction = await web3.eth.accounts.signTransaction(airdropData, 'YourPrivateKey'); // Replace with your private key
+    const signedTransaction = await web3.eth.accounts.signTransaction(airdropData, process.env.PRIVATE_KEY);
 
     axios.post(mumbaiTestnet, {
         method: 'eth_sendRawTransaction',
