@@ -10,17 +10,4 @@ web3.eth.getBalance(fromAddress, (error, fromBalance) => {
         return;
     }
 
-    web3.eth.getBalance(toAddress, (error, toBalance) => {
-        if (error) {
-            console.error('Error fetching toAddress balance:', error);
-            return;
-        }
-
-        if (fromBalance > 0 && toBalance === 0) {
-            console.log('Ethereum transaction detected from', fromAddress, 'to', toAddress);
-            // Trigger action and log transaction
-            console.log('Triggering action and logging transaction...');
-            // Add your airdrop logic here
-        }
-    });
-});
+    web3
