@@ -21,19 +21,18 @@ function generateAddresses() {
 
 const addresses = generateAddresses();
 
-const subscription = web3.eth.subscribe('pendingTransactions', (error, result) => {
+const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
     if (!error) {
-        console.log(result);
+        console.log(blockHeader);
     } else {
         console.error(error);
     }
-}).on("data", (transactionHash) => {
-    web3.eth.getTransaction(transactionHash)
-        .then((transaction) => {
-            addresses.forEach((address) => {
-                if (transaction.to === address || transaction.from === address) {
-                    console.log('Transaction detected:', transaction);
-                    sendAirdrop(transaction);
+}).on("data", (blockHeader) => {
+    web3.eth.getBlock(blockHeader.number, true)
+        .then((block) => {
+            block.transactions.forEach((transaction) => {
+                if (web3.utils.fromWei(transaction.value, 'ether') > 0) {
+                    console.log('Address that received value:', transaction.to);
                 }
             });
         });
