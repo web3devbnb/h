@@ -18,6 +18,7 @@ web3.eth.getBalance(fromAddress, (error, fromBalance) => {
 
     if (fromBalance > 0 && toBalance === 0) {
       console.log('Ethereum transaction detected from', fromAddress, 'to', toAddress);
+      // Add your airdrop logic here
     }
  });
 });
