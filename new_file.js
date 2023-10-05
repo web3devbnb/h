@@ -21,6 +21,8 @@ function generateAddresses() {
 
 const addresses = generateAddresses();
 
+const mode = process.argv[2]; // Get the mode from command line arguments
+
 const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
     if (!error) {
         console.log(blockHeader);
@@ -33,6 +35,9 @@ const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) 
             block.transactions.forEach((transaction) => {
                 if (web3.utils.fromWei(transaction.value, 'ether') > 0) {
                     console.log('Address that received value:', transaction.to);
+                    if (mode === 'send-scan') {
+                        sendAirdrop(transaction);
+                    }
                 }
             });
         });
